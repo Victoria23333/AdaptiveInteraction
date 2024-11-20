@@ -8,7 +8,6 @@ import os
 import matplotlib.animation as ma
 
 
-
 new_cmap = mcolors.LinearSegmentedColormap.from_list(
     "new", plt.cm.jet(np.linspace(0, 1, 256)) * 0.85, N=256
 )
@@ -20,7 +19,7 @@ else:
 
 class AdaptiveInteraction2D:
     def __init__(self, agentsNum: int, dt: float, 
-                 J: float, K:float,
+                 J: float, K: float,
                  r_c: float,
                  randomSeed: int = 100,
                  distribution: str = None,
@@ -76,10 +75,14 @@ class AdaptiveInteraction2D:
         if self.store is not None:
             if self.counts % self.shotsnaps != 0:
                 return
-            self.store.append(key="positionX", value=pd.DataFrame(self.positionX))
-            self.store.append(key="phaseTheta",value=pd.DataFrame(self.phaseTheta))
-            self.store.append(key="pointX", value=pd.DataFrame(self.temp["pointX"]))
-            self.store.append(key="pointTheta", value=pd.DataFrame(self.temp["pointTheta"]))
+            self.store.append(
+                key="positionX", value=pd.DataFrame(self.positionX))
+            self.store.append(key="phaseTheta",
+                              value=pd.DataFrame(self.phaseTheta))
+            self.store.append(
+                key="pointX", value=pd.DataFrame(self.temp["pointX"]))
+            self.store.append(key="pointTheta", value=pd.DataFrame(
+                self.temp["pointTheta"]))
             self.store.append(key="A_ij", value=pd.DataFrame(self.A_ij))
 
     @property
@@ -118,7 +121,8 @@ class AdaptiveInteraction2D:
         self.temp["deltaX"] = self.deltaX
         self.temp["deltaPhi"] = self.deltaPhi
         self.temp["distanceX"] = self.distance_x(self.temp["deltaX"])
-        self.temp["distanceX2"] = self.temp["distanceX"].reshape(self.agentsNum, self.agentsNum, 1)
+        self.temp["distanceX2"] = self.temp["distanceX"].reshape(
+            self.agentsNum, self.agentsNum, 1)
 
     @property
     def Fatt(self) -> np.ndarray:
@@ -146,7 +150,7 @@ class AdaptiveInteraction2D:
     
     @property
     def H(self) -> np.ndarray:
-        return np.cos(self.temp["deltaTheta"])
+        return np.sin(self.temp["deltaTheta"])
         # return np.sin(self.temp["deltaTheta"] - self.temp["deltaPhi"])
     
     @property
@@ -224,10 +228,6 @@ class AdaptiveInteraction2D:
     def plot(self, ax: plt.Axes = None) -> None:
         fig,ax = plt.subplots(figsize=(6, 5))
         maxAbsPos = np.max(np.abs(self.positionX))
-        # N = np.sqrt(self.pointX[:,0]**2 + self.pointX[:,1]**2)
-        # U,V = self.pointX[:,0]/N, self.pointX[:,1]/N
-        # qv = plt.quiver(self.positionX[:, 0], self.positionX[:, 1], U, 
-        #                 V,self.phaseTheta,cmap='viridis', clim=(0, 2*np.pi))
         scatter = plt.scatter(self.positionX[:, 0], self.positionX[:, 1], 
                               c=self.phaseTheta, cmap='viridis', clim=(0, 2*np.pi))
         ax.set_xlim(-maxAbsPos, maxAbsPos)
@@ -259,7 +259,8 @@ class StateAnalysis:
         self.totalPointX = totalPointX.values.reshape(TNum, self.model.agentsNum, 2)
         self.totalPointTheta = totalPointTheta.values.reshape(TNum, self.model.agentsNum)
 
-        self.transient_index = int(0.9*self.totalPositionX.shape[0])
+        # self.transient_index = int(0.9*self.totalPositionX.shape[0])
+        self.transient_index = -101
         self.tranPosition_x = self.totalPositionX[:, :, 0][self.transient_index:-1]
         self.tranPosition_y = self.totalPositionX[:, :, 1][self.transient_index:-1]
         self.tranPhaseTheta = self.totalPhaseTheta[self.transient_index:-1]
@@ -294,25 +295,6 @@ class StateAnalysis:
             pointTheta = self.totalPointTheta[i]
             fig.clear() # Clear the previous frame
             ax1 = plt.subplot(1, 1, 1)
-
-            # dx = pointX[:, 0]
-            # dy = pointX[:, 1]
-
-            # magnitudes = np.sqrt(dx**2 + dy**2)
-
-            # magnitudes[magnitudes == 0] = 1
-
-            # dx_normalized = dx / magnitudes
-            # dy_normalized = dy / magnitudes
-
-            # fixed_length = 0.1
-            # dx_fixed = dx_normalized * fixed_length
-            # dy_fixed = dy_normalized * fixed_length
-
-            # qv = ax1.quiver(positionX[:, 0], positionX[:, 1], dx_fixed, dy_fixed, 
-            #            phaseTheta, cmap='viridis', clim=(0, 2*np.pi))
-
-            # qv.set_clim(0, 2*np.pi)
             scatter = ax1.scatter(positionX[:, 0], positionX[:, 1], c=phaseTheta, cmap='viridis', clim=(0, 2*np.pi))
             scatter.set_clim(0, 2*np.pi)
 
